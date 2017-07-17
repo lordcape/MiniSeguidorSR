@@ -40,10 +40,12 @@ void MoverMotores (byte motor1PWM, byte motor1D, byte motor2PWM, byte motor2D, i
 
   if (velocidadMotor2 > 0)
   {
-    analogWrite(motor2PWM, velocidadMotor2);
+    Timer1.pwm(motor2PWM, (velocidadMotor2)*1024.0/255.0);
+    //analogWrite(motor2PWM, velocidadMotor2);
     digitalWrite(motor2D, 0);
   } else  {
-    analogWrite(motor2PWM, 255 + velocidadMotor2);
+    Timer1.pwm(motor2PWM, (255 + velocidadMotor2)*1024.0/255.0);
+    //analogWrite(motor2PWM, 255 + velocidadMotor2);
     digitalWrite(motor2D, 1);
   }
 }

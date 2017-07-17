@@ -1,8 +1,14 @@
-#define KP 1  
-#define KD 2.5	// Probar con KD >> KP 
-#define VEL_MAX 130
+#include <TimerOne.h>
+
+#define KP 2.9  
+#define KD 5	
+
+#define KP2 1  
+#define KD2 0  
+
+#define VEL_MAX 200
 #define VEL VEL_MAX/3*2// con 200
-#define DT 1000  // Cada 1 ms accion de control.
+//#define DT 1000  // Cada 1 ms accion de control.
 
 #define M1PWM 3
 #define M1A 4
@@ -34,19 +40,19 @@ unsigned long LastTime2[1] = {0};
 // CONTROLLER
 float LastError[1] = {0};
 float Error[1] = {0};
-float Constantes[4] = {KP,KD,DT,VEL};
+int Vel = VEL;
 int Vel_filtrada[1] = {0};
 
 // SENSORES
 boolean Ledon_state = false;
 
 // STATES
-byte Flags[1] = {0};
+int Flags[1] = {0};
 boolean Flag = false;
 
 void setup(){
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("/*** sigue_linea_PD ***/");
   Serial.println("*** INITS ***");
   LEDsInit();
@@ -57,7 +63,7 @@ void setup(){
 
   while(digitalRead(BOTON) == 1)
   { 
-	LEDsBlink(1, 1, 1, 100);
+	    LEDsBlink(1, 1, 1, 100);
   }
 
   ApagarMotores(M1PWM, M1A, M2PWM, M2A);
@@ -67,6 +73,9 @@ void setup(){
   
   Serial.println("*** GO! ***");
   LEDsDrive(0,0);
+
+  Timer1.initialize(20000); // set a timer of length 20000 microseconds (or 0.02 sec - or 50Hz)
+  Timer1.attachInterrupt(control_loop); // attach the service routine here
   
 }
 
@@ -79,24 +88,19 @@ void loop(){
    digitalWrite(LEDON,!Ledon_state); // Apago Sensores si Ledon_state = 0 !
    delay(200); 
   }
-  
-  if(Flag == true)
-  {
-    Now = micros();
-    dt = Now - *LastTime;     
-
-    if(dt > Constantes[2])
-    {
-      Vel_filtrada[0] = LecturaSensores2(1, 0, Error, LastError, LastTime2, Flags);
-      SeguirLinea(M1PWM, M1A, M2PWM, M2A, M1E, M2E, Vel_filtrada[0], Constantes[3], 0);  // Probar varios delays
-      *LastTime = Now;
-    }
     
-  }
-  else
-  {
-    LEDsDrive(0,0);
-    ApagarMotores(M1PWM, M1A, M2PWM, M2A);
-  }
-  
 }
+
+void control_loop() {
+    if(Flag == true)
+    {
+        //Vel_filtrada[0] = LecturaSensores2(1, 0, Error, LastError, LastTime2, Flags);
+        SeguirLinea(M1PWM, M1A, M2PWM, M2A, M1E, M2E, LecturaSensores2(1, 0, Error, LastError, LastTime2, Flags), Vel, 0);  // Probar varios delays
+    } 
+    else {
+        LEDsDrive(0,0);
+        ApagarMotores(M1PWM, M1A, M2PWM, M2A);
+    }
+
+}
+
