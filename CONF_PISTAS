@@ -1,1 +1,7 @@
 
+/*
+ * Para el ovalo:
+ *  - KP = 2.5
+ *  - KD = 8.5
+ *  - VEL_MAX = 170
+*/
